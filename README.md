@@ -13,20 +13,28 @@ This package allows you to achieve a **total acceleration of 3.5× to 5.0×** co
 
 ---
 
-### 💎 BSS Premium UI (Luxury Matte & Warm Gold)
+## ⚡ Key Features
 
-The optimization suite features a custom-tailored, exquisite UI design that gives your nodes a premium, luxury look and feel:
-- **Ultra-Matte Black Casing:** A deep matte `#0f0f0eff` color scheme that stands out beautifully on any ComfyUI grid, seamlessly merging node inputs and outputs into a solid, monolithic block.
-- **Warm Gold Accents:** Exquisite golden details (`#d4af37` / `#e5c158`) on active sliders, toggles, dropdown arrows, and input fields.
-- **Reactivity & Flow:** Complete integration with node settings (e.g., custom preset resolutions dynamically adjust width/height fields in real-time).
-- **Zero Distractions:** Fully suppressed help and regular tooltips, preventing annoying popup overlaps while tweaking parameters.
-- **Gilded Branding:** An elegant italic "BSS OPTIMIZED" branding engraving at the bottom-right corner of the nodes.
+* **Integrated JIT Compilation (`torch.compile`):** Safe, one-click compilation of DiT blocks built directly into the loaders. Runs on the stable `inductor` backend without CUDA Graphs, ensuring 100% stability and a speed boost of **20% to 40%**.
+* **SageAttention:** Built-in support for ultra-fast 8-bit attention tailored for DiT models, significantly accelerating computations while reducing memory consumption.
+* **Adaptive TeaCache:** Intelligent latent state caching. Dynamically adjusts the caching threshold: automatically lowering it in early steps to preserve geometry, and raising it in later steps for maximum acceleration.
+* **BSS Premium UI:** An integrated, high-contrast dark theme for the package's nodes. Features a fully redesigned full-width slider control, adaptive visibility for inactive preset inputs, and complete suppression of intrusive tooltips for a distraction-free experience.
+
+---
+
+## ⚡ Performance Quick Overview
+
+| Configuration | Average Acceleration | Description |
+|---|---|---|
+| fp16 Only | **1.4×** | Baseline precision optimization |
+| fp16 + **SageAttention** | **1.8–2.5×** | Ultra-fast 8-bit attention for DiT |
+| fp16 + **Adaptive TeaCache** | **1.5–2.0×** | Intelligent step caching |
+| **fp16 + SageAttn + TeaCache** | 🚀 **2.5–3.5×** | Perfect balance of speed and quality |
+| **+ Integrated torch.compile** | 💎 **3.5–5.0×** | Maximum performance boost (after a 2-3 step warm-up phase) |
 
 ---
 
 ## 📥 Installation
-
-There are two easy ways to install **ANIMA_BOOSTER**:
 
 ### Method 1: Via ComfyUI Manager (Recommended)
 1. Open ComfyUI and click on the **Manager** button.
@@ -35,7 +43,7 @@ There are two easy ways to install **ANIMA_BOOSTER**:
 4. Click **Install**, wait for the process to complete, and restart ComfyUI.
 
 ### Method 2: Manual Installation (Git Clone)
-1. Open your command prompt (CMD or Terminal) and navigate to your ComfyUI custom nodes directory:
+1. Open your terminal and navigate to your ComfyUI custom nodes directory:
    ```bash
    cd ComfyUI/custom_nodes
    ```
@@ -47,55 +55,24 @@ There are two easy ways to install **ANIMA_BOOSTER**:
 
 ---
 
-## 🆕 What's New in Version v1.2 (Changelog)
-
-### 💎 Global Refactoring and Stabilization:
-1. **Removed Redundant Nodes (Codebase Cleanup):**
-   - **The experimental `AnimaSparseAttention` node has been completely removed**. Using local sparse attention on 28 blocks of a model trained on Full Attention disrupted the global image structure and deformed geometry (causing severe artifacts).
-   - **The complex `AnimaTorchCompile` node has been removed**. All of its fine-tuning options were redundant and caused critical PyTorch crashes with CUDA Graphs tensor overwrite errors when handling dynamic latent dimensions.
-2. **Safe One-Click JIT Compilation:**
-   - Instead of an unstable external node, **stable JIT compilation (`torch.compile`) is now integrated directly into the loaders (`AnimaBoosterLoader` / `CheckpointLoader`) as a simple, single toggle**.
-   - Compilation runs on the safe default `inductor` backend without CUDA Graphs, giving the same **+20% to +40% speed boost** while guaranteeing **100% stability** without crashes or failures.
-3. **Fixed TeaCache Scaling Bug (Bulletproof Adaptive Mode):**
-   - **The Issue:** For SDE-family samplers (e.g., `er_sde`, `sde gpu`) that operate on a sigma scale (`[14.6 .. 0.0]`), TeaCache mistakenly treated the very first step as a 98% denoising progress. This triggered aggressive caching right from the first frame — resulting in fast generation but completely breaking the image with heavy artifacts.
-   - **The Solution:** Implemented **dynamic timestep scale auto-detection (`st.max_t`)**. Now, TeaCache mathematically determines the start and end of generation for **any sampler and schedule** (sigmas, 1000..0, or 1..0 scales). The adaptive mode works perfectly: early structural steps are protected from caching, while late-stage detailing is safely accelerated.
-
----
-
-## ⚡ Performance Quick Overview
-
-| Configuration | Average Acceleration | Description |
-|---|---|---|
-| fp16 Only | **1.4×** | Baseline precision optimization |
-| fp16 + **SageAttention (BSS)** | **1.8–2.5×** | Ultra-fast 8-bit attention for DiT |
-| fp16 + **Adaptive TeaCache (BSS)** | **1.5–2.0×** | Intelligent step caching |
-| **fp16 + SageAttn + TeaCache** | 🚀 **2.5–3.5×** | Perfect balance of speed and quality |
-| **+ Integrated torch.compile** | 💎 **3.5–5.0×** | Maximum performance boost (after a 2-3 step warm-up phase) |
-
-> [!TIP]
-> All attention and compilation optimizations are applied in isolation (`model.clone()`). This prevents corruption of ComfyUI's global cache and guarantees stable operation of other models.
-
----
-
 ## 🧩 `BSS/AnimaBooster` Node List
 
-All nodes are registered under the `BSS/AnimaBooster` category and feature a unique brand identity:
+All nodes are registered under the `BSS/AnimaBooster` category:
 
 1. 📥 **Anima Booster Loader (BSS)** (class `AnimaBoosterLoader`)
    - Loads the Anima DiT model in the optimized fp16 format.
-   - **SageAttention**: Automatically applies accelerated 8-bit attention if installed in the system. If unavailable, it seamlessly falls back to built-in PyTorch SDPA without import errors.
-   - **Torch Compile**: An integrated toggle for safe compilation of DiT blocks. Runs on the stable `inductor` backend (mode: `default`), boosting speeds by 30-40% without CUDA Graphs crashes.
+   - **SageAttention**: Automatically applies accelerated 8-bit attention if installed in the system. If unavailable, it seamlessly falls back to built-in PyTorch SDPA.
+   - **Torch Compile**: An integrated toggle for safe JIT compilation of individual transformer blocks.
 2. 🎛️ **Anima TeaCache (BSS)** (class `AnimaTeaCache`)
    - Implements adaptive latent state caching based on denoising steps (TeaCache).
-   - Saves up to 50-60% of computation during "stable" denoising phases.
+   - Automatically calculates the timestep scale for all sampler types (including SDE).
 3. 🖼️ **Anima Latent Image (BSS)** (class `AnimaLatentImage`)
-   - A utility for generating empty latents with automatic size alignment to the Anima DiT patch grid (2x2), preventing tensor dimension mismatch errors.
+   - A utility for generating empty latents with automatic size alignment to the Anima DiT patch grid (2x2), preventing tensor dimension mismatch errors. Provides predefined aspect ratio presets.
 
 ---
 
-## 📈 Key Innovations
+## 📈 Adaptive TeaCache Threshold
 
-### 1. Adaptive TeaCache Threshold
 Unlike standard TeaCache implementations with a fixed threshold, the **BSS** version uses a **dynamic adaptive threshold** that evolves during the denoising process:
 - **In early steps** (high noise, image structure formation), the threshold is automatically lowered to ensure maximum rendering precision and geometric accuracy.
 - **In later steps** (details have stabilized, micro-texturing takes place), the threshold is raised, allowing up to 80% of block computations to be safely skipped without quality loss.
