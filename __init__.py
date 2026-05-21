@@ -28,7 +28,7 @@ except Exception as e:
     AnimaLatentImage = None
     AnimaTeaCache = None
 
-__version__ = "1.2.1"
+__version__ = "1.3.0"
 
 NODE_CLASS_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS = {}
@@ -62,6 +62,6 @@ if _load_error:
     logger.warning(f"[ANIMA_BOOSTER] Partial load due to error: {_load_error}")
 else:
     loaded = list(NODE_CLASS_MAPPINGS.keys())
-    logger.info(f"[ANIMA_BOOSTER] Loaded {len(loaded)} nodes: {loaded} | Version: v1.2.1 | Authorship: blacksnowskill (BSS)")
+    logger.info(f"[ANIMA_BOOSTER] Loaded {len(loaded)} nodes: {loaded} | Version: v1.3.0 | Authorship: blacksnowskill (BSS)")
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "WEB_DIRECTORY", "__version__"]

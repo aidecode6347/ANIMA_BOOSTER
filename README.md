@@ -65,7 +65,9 @@ All nodes are registered under the `BSS/AnimaBooster` category:
    - **Torch Compile**: An integrated toggle for safe JIT compilation of individual transformer blocks.
 2. 🎛️ **Anima TeaCache (BSS)** (class `AnimaTeaCache`)
    - Implements adaptive latent state caching based on denoising steps (TeaCache).
-   - Automatically calculates the timestep scale for all sampler types (including SDE).
+   - **Version Selector (teacache_version)**: Allows you to choose between two modes:
+     * `v1 (Legacy Fast)` (Default): Restores the highly requested aggressive caching behavior with a fixed timestep normalizer. Delivers an instant 2.0× speedup out-of-the-box on SDE samplers (such as `er_sde`, `sde gpu`), though it might introduce minor artifacts on Euler A.
+     * `v2 (Standard Precise)`: Mathematically precise, dynamic timestep normalization that adapts to any sampler and scheduler. Fully protects early structural steps and guarantees perfect image quality.
 3. 🖼️ **Anima Latent Image (BSS)** (class `AnimaLatentImage`)
    - A utility for generating empty latents with automatic size alignment to the Anima DiT patch grid (2x2), preventing tensor dimension mismatch errors. Provides predefined aspect ratio presets.
 
@@ -76,6 +78,11 @@ All nodes are registered under the `BSS/AnimaBooster` category:
 Unlike standard TeaCache implementations with a fixed threshold, the **BSS** version uses a **dynamic adaptive threshold** that evolves during the denoising process:
 - **In early steps** (high noise, image structure formation), the threshold is automatically lowered to ensure maximum rendering precision and geometric accuracy.
 - **In later steps** (details have stabilized, micro-texturing takes place), the threshold is raised, allowing up to 80% of block computations to be safely skipped without quality loss.
+
+> [!TIP]
+> **Choosing the Timestep Normalization Mode (in v1.3.0):**
+> * If you want **uncompromised extreme speed** out-of-the-box on SDE samplers and enjoy experimenting, select `v1 (Legacy Fast)`.
+> * If you are running Euler A, require **maximum geometric precision**, or want to fine-tune quality using `early_steps_factor` and `late_steps_factor`, select `v2 (Standard Precise)`.
 
 ---
 

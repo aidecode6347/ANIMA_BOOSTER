@@ -52,6 +52,12 @@ class AnimaTeaCache:
                         "display": "slider",
                     },
                 ),
+                "teacache_version": (
+                    ["v1 (Legacy Fast)", "v2 (Standard Precise)"],
+                    {
+                        "default": "v1 (Legacy Fast)",
+                    },
+                ),
                 "adaptive_mode": (
                     "BOOLEAN",
                     {
@@ -122,6 +128,7 @@ class AnimaTeaCache:
         self,
         model,
         threshold: float,
+        teacache_version: str,
         adaptive_mode: bool,
         early_steps_factor: float,
         late_steps_factor: float,
@@ -132,6 +139,7 @@ class AnimaTeaCache:
         patched = patch_model_with_teacache(
             model=model,
             threshold=threshold,
+            version=teacache_version,
             adaptive=adaptive_mode,
             early_factor=early_steps_factor,
             late_factor=late_steps_factor,

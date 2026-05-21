@@ -76,6 +76,7 @@ class _StreamState:
 def patch_model_with_teacache(
     model,
     threshold: float = 0.15,
+    version: str = "v1 (Legacy Fast)",
     adaptive: bool = True,
     early_factor: float = 0.4,
     late_factor: float = 1.8,
@@ -93,6 +94,7 @@ def patch_model_with_teacache(
 
     cfg = {
         "threshold": threshold,
+        "version": version,
         "adaptive": adaptive,
         "early_factor": early_factor,
         "late_factor": late_factor,
@@ -140,8 +142,12 @@ def patch_model_with_teacache(
             st.max_t = max(1e-4, t_val)
 
         # Estimate step position (0.0 = start, 1.0 = end)
-        # Dynamic normalization adapts to any timestep range (e.g. 1000..0, 1.0..0, sigmas)
-        step_pct = max(0.0, min(1.0, 1.0 - t_val / st.max_t))
+        if cfg["version"] == "v1 (Legacy Fast)":
+            # Legacy mode: fixed normalizer of 1000.0, which causes aggressive early caching on SDE samplers
+            step_pct = max(0.0, min(1.0, 1.0 - t_val / 1000.0))
+        else:
+            # Precise mode: dynamic normalization adapting exactly to any timestep range (sigmas, 1000..0, 1..0)
+            step_pct = max(0.0, min(1.0, 1.0 - t_val / st.max_t))
 
         st.prev_t = t_val
 
@@ -186,7 +192,7 @@ def patch_model_with_teacache(
     m.set_model_unet_function_wrapper(unet_wrapper)
 
     logger.info(
-        f"[TeaCache] Patched | threshold={threshold} | adaptive={adaptive} | "
+        f"[TeaCache] Patched | version={version} | threshold={threshold} | adaptive={adaptive} | "
         f"early={early_factor} | late={late_factor} | "
         f"range=[{start_percent:.0%}–{end_percent:.0%}]"
     )
