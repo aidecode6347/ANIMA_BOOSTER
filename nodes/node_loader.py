@@ -206,3 +206,73 @@ class AnimaBoosterCheckpointLoader:
 
         return (model, clip, vae)
 
+
+class SdxlBoosterCheckpointLoader:
+    """
+    Optimized loader for SDXL checkpoints.
+    
+    Loads standard SDXL checkpoints (Model + CLIP + VAE), and optionally applies torch.compile to the model.
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "ckpt_name": (
+                    folder_paths.get_filename_list("checkpoints"),
+                    {"tooltip": "Select your SDXL .safetensors checkpoint file"},
+                ),
+                "torch_compile": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "tooltip": (
+                            "Apply torch.compile to the full diffusion UNet model. "
+                            "First 2-3 generations are very slow (compilation warmup). "
+                            "Subsequent generations: ~20-35% faster."
+                        ),
+                    },
+                ),
+            },
+        }
+
+    RETURN_TYPES = ("MODEL", "CLIP", "VAE")
+    RETURN_NAMES = ("model", "clip", "vae")
+    FUNCTION = "load_checkpoint"
+    CATEGORY = "BSS/AnimaBooster"
+
+    def load_checkpoint(
+        self,
+        ckpt_name: str,
+        torch_compile: bool,
+    ):
+        ckpt_path = folder_paths.get_full_path_or_raise("checkpoints", ckpt_name)
+        logger.info(f"[SdxlBoosterCheckpointLoader] Loading: {ckpt_name}")
+
+        # Load via ComfyUI's official function (identical to CheckpointLoaderSimple)
+        out = comfy.sd.load_checkpoint_guess_config(
+            ckpt_path, 
+            output_vae=True, 
+            output_clip=True, 
+            embedding_directory=folder_paths.get_folder_paths("embeddings")
+        )
+        model, clip, vae, clipvision = out
+
+        dm = model.get_model_object("diffusion_model")
+        logger.info(
+            f"[SdxlBoosterCheckpointLoader] Loaded: {type(dm).__name__} | "
+            f"dtype={model.model.get_dtype()}"
+        )
+
+        # Apply torch.compile
+        if torch_compile:
+            try:
+                # Compile the full UNet since UNets do not have standard block lists like DiTs
+                model = detect_and_compile_blocks(model, mode="default")
+                logger.info("[SdxlBoosterCheckpointLoader] torch.compile applied: default")
+            except Exception as e:
+                logger.error(f"[SdxlBoosterCheckpointLoader] torch.compile failed: {e} — continuing without it")
+
+        return (model, clip, vae)
+
+

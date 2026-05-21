@@ -16,17 +16,19 @@ import logging
 logger = logging.getLogger("BSS_ANIMA_BOOSTER")
 
 try:
-    from .nodes.node_loader import AnimaBoosterLoader, AnimaBoosterCheckpointLoader
+    from .nodes.node_loader import AnimaBoosterLoader, AnimaBoosterCheckpointLoader, SdxlBoosterCheckpointLoader
     from .nodes.node_latent import AnimaLatentImage
-    from .nodes.node_teacache import AnimaTeaCache
+    from .nodes.node_teacache import AnimaTeaCache, SdxlTeaCache
     _load_error = None
 except Exception as e:
     _load_error = e
     logger.error(f"[ANIMA_BOOSTER] Failed to load nodes: {e}", exc_info=True)
     AnimaBoosterLoader = None
     AnimaBoosterCheckpointLoader = None
+    SdxlBoosterCheckpointLoader = None
     AnimaLatentImage = None
     AnimaTeaCache = None
+    SdxlTeaCache = None
 
 __version__ = "1.3.0"
 
@@ -44,6 +46,10 @@ if AnimaBoosterCheckpointLoader is not None:
     NODE_CLASS_MAPPINGS["AnimaBoosterCheckpointLoader"] = AnimaBoosterCheckpointLoader
     NODE_DISPLAY_NAME_MAPPINGS["AnimaBoosterCheckpointLoader"] = "Anima Checkpoint Loader (BSS)"
 
+if SdxlBoosterCheckpointLoader is not None:
+    NODE_CLASS_MAPPINGS["SdxlBoosterCheckpointLoader"] = SdxlBoosterCheckpointLoader
+    NODE_DISPLAY_NAME_MAPPINGS["SdxlBoosterCheckpointLoader"] = "SDXL Checkpoint Loader (BSS)"
+
 if AnimaLatentImage is not None:
     NODE_CLASS_MAPPINGS["AnimaLatentImage"] = AnimaLatentImage
     NODE_DISPLAY_NAME_MAPPINGS["AnimaLatentImage"] = "Anima Latent Image (BSS)"
@@ -51,6 +57,10 @@ if AnimaLatentImage is not None:
 if AnimaTeaCache is not None:
     NODE_CLASS_MAPPINGS["AnimaTeaCache"] = AnimaTeaCache
     NODE_DISPLAY_NAME_MAPPINGS["AnimaTeaCache"] = "Anima TeaCache (BSS)"
+
+if SdxlTeaCache is not None:
+    NODE_CLASS_MAPPINGS["SdxlTeaCache"] = SdxlTeaCache
+    NODE_DISPLAY_NAME_MAPPINGS["SdxlTeaCache"] = "SDXL TeaCache (BSS)"
 
 
 
