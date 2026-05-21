@@ -444,8 +444,8 @@ app.registerExtension({
                     }, 50);
                 }
 
-                // --- Динамика для TeaCache ---
-                if (nodeData.name === "AnimaTeaCache" || nodeData.name === "SdxlTeaCache") {
+                // --- Динамика для AnimaTeaCache ---
+                if (nodeData.name === "AnimaTeaCache") {
                     const updateTeaCacheWidgets = () => {
                         const adaptiveWidget = this.widgets?.find(w => w.name === "adaptive_mode");
                         if (!adaptiveWidget) return;
@@ -498,7 +498,7 @@ app.registerExtension({
                     }
                 }
 
-                if (nodeData.name === "AnimaTeaCache" || nodeData.name === "SdxlTeaCache") {
+                if (nodeData.name === "AnimaTeaCache") {
                     const adaptiveWidget = this.widgets?.find(w => w.name === "adaptive_mode");
                     if (adaptiveWidget) {
                         const val = !!adaptiveWidget.value;
