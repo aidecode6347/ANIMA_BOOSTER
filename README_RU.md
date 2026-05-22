@@ -131,6 +131,69 @@
 
 ---
 
+## 🐧 Установка и зависимости на Linux (Ubuntu)
+
+В операционных системах Linux/Ubuntu процесс установки значительно проще, чем на Windows, так как компиляторы и сборочные утилиты встроены в систему по умолчанию.
+
+### 📦 Предварительные требования
+
+Убедитесь, что в вашей системе установлен CUDA Toolkit и компилятор `nvcc` доступен в окружении (проверить можно командой `nvcc --version`).
+
+### 📦 Установка SageAttention 2.x
+
+Рекомендуется использовать SageAttention версии 2.x для современных видеокарт (архитектуры Ampere, Lovelace, Blackwell, например, серии RTX 30xx, 40xx, 50xx).
+
+1. Активируйте виртуальное окружение ComfyUI:
+   ```bash
+   source /путь_к_ComfyUI/venv/bin/activate
+   ```
+2. Установите SageAttention напрямую из PyPI с флагом `--no-build-isolation`, чтобы исключить конфликты зависимостей с PyTorch:
+   ```bash
+   pip install sageattention --no-build-isolation
+   ```
+   *Если стандартная установка не удалась, скомпилируйте из исходного кода:*
+   ```bash
+   git clone https://github.com/thu-ml/SageAttention.git
+   cd SageAttention
+   pip install "setuptools<=75.8.2"
+   pip install --no-build-isolation -e .
+   ```
+
+---
+
+## 🔍 Решение проблем: Ошибки Triton JIT и `PassManager::run failed`
+
+Если вы включили параметр `torch_compile` в ноде загрузчика и получили сбой в KSampler с ошибкой `RuntimeError: PassManager::run failed` (возникающей при сборке ядра `_attn_fwd` компилятором Triton, особенно часто на Ubuntu 24.04 с Python 3.12) — это известная проблема несовместимости Triton с системным компилятором/библиотеками LLVM.
+
+Чтобы решить или обойти эту проблему, попробуйте следующие варианты:
+
+### 1. Отключение `torch_compile` (Рекомендуется)
+Самый простой и надежный способ — установить параметр **`torch_compile` в значение `False`** в нодах загрузчиков **Anima Booster Loader (BSS)** или **Anima Checkpoint Loader (BSS)**.
+* *Почему это помогает:* Ноды пакета отлично оптимизированы. Даже с выключенной компиляцией вы получите колоссальный прирост скорости (**в 2.5–3.5 раза**) за счет работы **SageAttention** и **TeaCache**, при этом полностью исключите нестабильный JIT-компилятор Triton.
+
+### 2. Отключение оптимизаций Triton JIT
+Вы можете заставить Triton пропустить проблемный шаг оптимизации компиляции. Для этого запустите ComfyUI с переменной окружения:
+```bash
+export TRITON_JIT_DISABLE_OPT=1
+python main.py
+```
+
+### 3. Очистка кэша компилятора Triton
+Иногда кэшированные ядра компилируются некорректно. Удалите папки кэша:
+```bash
+rm -rf ~/.triton/cache
+rm -rf ~/.cache/triton
+rm -rf /tmp/torchinductor_*
+```
+
+### 4. Принудительное обновление Triton
+Убедитесь, что установлена корректная версия Triton, совместимая с вашей версией PyTorch:
+```bash
+pip install --upgrade --force-reinstall triton
+```
+
+
+
 ## 🧑‍💻 Технические детали реализации для разработчиков
 
 - **Основа модели**: Anima DiT базируется на архитектуре `MiniTrainDIT` с адаптером `LLMAdapter`.

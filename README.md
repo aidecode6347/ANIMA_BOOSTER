@@ -133,6 +133,68 @@ To install it successfully, use precompiled binary packages (`.whl` wheels):
 
 ---
 
+## 🐧 Installation & Dependencies on Linux (Ubuntu)
+
+On Linux/Ubuntu systems, installing dependencies is much more straightforward than on Windows since compilation tools and build pipelines are natively supported.
+
+### 📦 Prerequisites
+
+Ensure you have the CUDA Toolkit installed and available in your environment (`nvcc --version`).
+
+### 📦 Installing SageAttention 2.x
+
+SageAttention 2.x is highly recommended for newer GPUs (Ampere, Lovelace, Blackwell, e.g., RTX 30xx, 40xx, 50xx).
+
+1. Activate your ComfyUI virtual environment:
+   ```bash
+   source /path/to/ComfyUI/venv/bin/activate
+   ```
+2. Install SageAttention directly via PyPI with the `--no-build-isolation` flag to prevent dependency mismatches with PyTorch:
+   ```bash
+   pip install sageattention --no-build-isolation
+   ```
+   *If PyPI fails, you can compile from source:*
+   ```bash
+   git clone https://github.com/thu-ml/SageAttention.git
+   cd SageAttention
+   pip install "setuptools<=75.8.2"
+   pip install --no-build-isolation -e .
+   ```
+
+---
+
+## 🔍 Troubleshooting: Triton JIT & `PassManager::run failed` Errors
+
+If you enable `torch_compile` in the loader node and encounter a runtime crash in KSampler with Triton raising `RuntimeError: PassManager::run failed` (specifically under `_attn_fwd` during Triton compilation on Ubuntu 24.04), this is a known compatibility issue between Triton's code generator, LLVM, and local system compiler tools.
+
+To resolve or bypass this error, try the following solutions:
+
+### 1. Disable `torch_compile` (Recommended)
+The easiest and most robust workaround is to simply set **`torch_compile` to `False`** in the **Anima Booster Loader (BSS)** or **Anima Checkpoint Loader (BSS)** node.
+* *Why:* The nodes are fully optimized, and you will still get massive acceleration (**2.5× to 3.5×**) using just **SageAttention** and **TeaCache** without invoking Triton's JIT compiler.
+
+### 2. Disable Triton JIT Optimizations
+You can bypass the failing compilation pass by running ComfyUI with the Triton optimization disable flag. Run ComfyUI like this:
+```bash
+export TRITON_JIT_DISABLE_OPT=1
+python main.py
+```
+
+### 3. Clear Triton Compiler Cache
+Sometimes Triton's cached kernels get corrupted or miscompiled. Clear the cache directory:
+```bash
+rm -rf ~/.triton/cache
+rm -rf ~/.cache/triton
+rm -rf /tmp/torchinductor_*
+```
+
+### 4. Reinstall compatible Triton
+Ensure your Triton version is strictly compatible with PyTorch:
+```bash
+pip install --upgrade --force-reinstall triton
+```
+
+
 ## 🧑‍💻 Technical Implementation Details for Developers
 
 - **Model Base**: Anima DiT is based on the `MiniTrainDIT` architecture with the `LLMAdapter` wrapper.
